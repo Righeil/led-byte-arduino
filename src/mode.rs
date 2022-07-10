@@ -3,7 +3,7 @@ pub use counter::Counter;
 mod char_display;
 pub use char_display::CharDisplay;
 
-#[derive(PartialEq)]
+#[derive(PartialEq, Clone)]
 pub enum ModeType {
     Counter,
     CharDisplay
