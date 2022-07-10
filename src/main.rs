@@ -6,7 +6,7 @@ use core::sync::atomic::{AtomicBool, Ordering};
 use arduino_hal::port::{Pin, mode::Output};
 
 mod mode;
-use mode::{ModeType, Mode, Counter, CharDisplay};
+use mode::{ModeType, Mode, Counter, CharDisplay, RunningLight};
 
 #[panic_handler]
 fn panic(_info: &core::panic::PanicInfo) -> ! {
@@ -49,6 +49,7 @@ fn main() -> ! {
 
     let mut counter = Counter::new();
     let mut char_display = CharDisplay::new("ze_santassination_skial_12");
+    let mut running_light = RunningLight::new();
 
     let mut byte: u8;
 
@@ -62,11 +63,13 @@ fn main() -> ! {
             if CHANGE_MODE.load(Ordering::SeqCst) {
                 mode = match mode {
                     ModeType::Counter => ModeType::CharDisplay,
-                    ModeType::CharDisplay => ModeType::Counter
+                    ModeType::CharDisplay => ModeType::RunningLight,
+                    ModeType::RunningLight => ModeType::Counter
                 };
         
                 counter.reset();
                 char_display.reset();
+                running_light.reset();
 
                 CHANGE_MODE.store(false, Ordering::SeqCst)
             }
@@ -74,11 +77,12 @@ fn main() -> ! {
 
         byte = match mode {
             ModeType::Counter => counter.next(),
-            ModeType::CharDisplay => char_display.next()
+            ModeType::CharDisplay => char_display.next(),
+            ModeType::RunningLight => running_light.next()
         };
 
         visualize(&mut leds, byte);
-        arduino_hal::delay_ms(250);
+        arduino_hal::delay_ms(100);
     }
 }
 
